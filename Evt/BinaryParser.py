@@ -22,7 +22,7 @@ import struct
 import sys
 from datetime import datetime
 import types
-import cPickle
+import pickle
 
 verbose = False
 
@@ -30,19 +30,19 @@ verbose = False
 def debug(*message):
     global verbose
     if verbose:
-        print "# [d] %s" % (", ".join(map(str, message)))
+        print("# [d] %s" % (", ".join(map(str, message))))
 
 
 def warning(message):
-    print "# [w] %s" % (message)
+    print("# [w] %s" % (message))
 
 
 def info(message):
-    print "# [i] %s" % (message)
+    print("# [i] %s" % (message))
 
 
 def error(message):
-    print "# [e] %s" % (message)
+    print("# [e] %s" % (message))
     sys.exit(-1)
 
 
@@ -483,7 +483,7 @@ class Block(object):
                     temp = type_(self._buf, self.absolute_offset(offset), self)
 
                     self._implicit_offset = offset + len(temp)
-        elif isinstance(type_, basestring):
+        elif isinstance(type_, str):
             typename = type_
 
             if count == 0:

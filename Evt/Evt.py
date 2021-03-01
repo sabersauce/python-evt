@@ -17,18 +17,20 @@
 #   limitations under the License.
 #
 #   Version v.0.1
+from __future__ import absolute_import
+
 import logging
 import struct
 
-from mutablenamedtuple import mutablenamedtuple
+from .mutablenamedtuple import mutablenamedtuple
 
-from BinaryParser import Block
-from BinaryParser import Nestable
-from BinaryParser import read_byte
-from BinaryParser import read_dword
+from .BinaryParser import Block
+from .BinaryParser import Nestable
+from .BinaryParser import read_byte
+from .BinaryParser import read_dword
 
 
-LFLE_MAGIC = "LfLe"
+LFLE_MAGIC = b"LfLe"
 MINRECORD = 0x30
 
 
@@ -146,18 +148,18 @@ class Record(Block, Nestable):
         ret = []
         string_buf = self.unpack_binary(self.strings_offset(), self.length() - self.strings_offset())
         rest = string_buf
-        for _ in xrange(self.num_strings()):
-            part, _, rest = rest.partition("\x00\x00")
-            if len(part) % 2 == 1 or (len(rest) > 0 and rest[0] == "\x00"):
-                part += "\x00"
-            ret.append(part.lstrip("\x00").decode("utf-16le"))
+        for _ in range(self.num_strings()):
+            part, _, rest = rest.partition(b"\x00\x00")
+            if len(part) % 2 == 1 or (len(rest) > 0 and rest[0:1] == b"\x00"):
+                part += b"\x00"
+            ret.append(part.lstrip(b"\x00").decode("utf-16le"))
         return ret
 
     def source(self):
         source_buf = self.unpack_binary(0x38, self.length() - 0x38)
-        part, _, rest = source_buf.partition("\x00\x00")
-        if len(part) % 2 == 1 or (len(rest) > 0 and rest[0] == "\x00"):
-            part += "\x00"
+        part, _, rest = source_buf.partition(b"\x00\x00")
+        if len(part) % 2 == 1 or (len(rest) > 0 and rest[0:1] == b"\x00"):
+            part += b"\x00"
         return part.decode("utf-16le")
 
     @staticmethod
@@ -166,9 +168,9 @@ class Record(Block, Nestable):
 
     def computer_name(self):
         source_buf = self.unpack_binary(0x38, self.length() - 0x38)
-        index1 = [source_buf[i:i + 2] for i in range(0, len(source_buf), 2)].index('\x00\x00')
+        index1 = [source_buf[i:i + 2] for i in range(0, len(source_buf), 2)].index(b'\x00\x00')
         try:
-            end = 2 * (index1 + 1 + [source_buf[i:i + 2] for i in range(2 * index1 + 2, len(source_buf), 2)].index('\x00\x00'))
+            end = 2 * (index1 + 1 + [source_buf[i:i + 2] for i in range(2 * index1 + 2, len(source_buf), 2)].index(b'\x00\x00'))
         except ValueError:  # Not null terminated
             end = len(source_buf)
         return source_buf[index1 * 2 + 2: end].decode('utf-16le')
